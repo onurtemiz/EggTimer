@@ -18,6 +18,7 @@ public class MainActivity extends AppCompatActivity {
     private CountDownTimer countDownTimer;
     private int maxSec = 1500;
     private MediaPlayer mediaPlayer;
+    private boolean isTicking = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,9 +28,9 @@ public class MainActivity extends AppCompatActivity {
         timerView = (TextView) findViewById(R.id.timerView);
         goButton = (Button) findViewById(R.id.goButton);
         seekBar = (SeekBar) findViewById(R.id.seekBar);
-        mediaPlayer = MediaPlayer.create(getApplicationContext(), getResources().getIdentifier("airhorn","raw",getPackageName()));
+        mediaPlayer = MediaPlayer.create(getApplicationContext(), getResources().getIdentifier("airhorn", "raw", getPackageName()));
         seekBar.setMax(maxSec);
-        seekBar.setProgress(maxSec/2);
+        seekBar.setProgress(maxSec / 2);
         timerView.setText(getStringTime(seekBar.getProgress()));
 
 
@@ -43,6 +44,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
                 countDownTimer.cancel();
+                goButton.setText("GO!");
+                isTicking = false;
             }
 
             @Override
@@ -51,40 +54,52 @@ public class MainActivity extends AppCompatActivity {
             }
 
 
-
         });
 
         changeCountTimer(seekBar.getProgress());
     }
 
 
-    public String getStringTime(int time){
-        String strMinutes = String.valueOf(time/60).length() == 1 ? "0" + (time/60) : String.valueOf(time/60);
-        String strSeconds = String.valueOf(time%60).length() == 1 ? "0" + (time%60) : String.valueOf(time%60);
+    public String getStringTime(int time) {
+        String strMinutes = String.valueOf(time / 60).length() == 1 ? "0" + (time / 60) : String.valueOf(time / 60);
+        String strSeconds = String.valueOf(time % 60).length() == 1 ? "0" + (time % 60) : String.valueOf(time % 60);
 
         return (strMinutes + ":" + strSeconds);
     }
 
 
-    public void startTimer(View view){
-        this.countDownTimer.cancel();
-        changeCountTimer(seekBar.getProgress());
-        this.countDownTimer.start();
+    public void startTimer(View view) {
+
+
+
+        if (!this.isTicking) {
+            changeCountTimer(seekBar.getProgress());
+            this.countDownTimer.start();
+            this.isTicking = true;
+            goButton.setText("STOP!");
+        }else {
+            this.isTicking = false;
+            this.countDownTimer.cancel();
+            goButton.setText("GO!");
+        }
 
     }
 
 
-    public void changeCountTimer(int sec){
-        this.countDownTimer = new CountDownTimer(sec*1000,1000) {
+    public void changeCountTimer(int sec) {
+        this.countDownTimer = new CountDownTimer(sec * 1000+100, 1000) {
             @Override
             public void onTick(long millisUntilFinished) {
-                seekBar.setProgress(seekBar.getProgress()-1);
+                seekBar.setProgress(seekBar.getProgress() - 1);
 
             }
 
             @Override
             public void onFinish() {
+                goButton.setText("GO!");
+                isTicking = false;
                 mediaPlayer.start();
+
             }
         };
     }
